@@ -17,9 +17,9 @@ public class ClientFile {
     int buffsize =0;
     InputStream input;
     BufferedOutputStream buffOut;
-    public static final String LIST = "-list";
-    public static final String TRANSFER = "-transfer";
-    private static final int LIST_PORT = 1000;
+    //public static final String LIST = "-list";
+    //public static final String TRANSFER = "-transfer";
+    //private static final int LIST_PORT = 1000;
     private static final int TRANSFER_PORT = 2000;
     public static final int EXIT = 1; 
 
@@ -30,54 +30,62 @@ public class ClientFile {
         } catch(Exception e){ 
             e.printStackTrace();
         }}
-    
+
     public static void main(String args[]){
-           new ClientFile(); 
+        new ClientFile(); 
     }
-    
+
     //Exit process and disconnects with server
     public void exit(){
         System.out.println("Good-bye");
     }
-    
+
     /*
      * Method to collect the port number and determine which process the clients
      * wants to connect to.
      */
     public void start() throws Exception{
         host = ""; //SET HOST TO SERVER HOST
-        this.port = readProcessPort();
-        while(port != 1){
-            if(port == -1)//command error
-                this.port = readProcessPort();
-            else{
-                client = new Client(host, this.port);
-                menu();
-                client.write(scanner.nextLine()); //write to server
-                System.out.println(client.read()); //read from server
-                //Get process
-                this.port = readProcessPort();
-            }
-        }
+        //         this.port = readProcessPort();
+        //         while(port != 1){
+        //             if(port == -1)//command error
+        //                 this.port = readProcessPort();
+        //             else{
+        client = new Client(host, TRANSFER_PORT);
+        menu();
+        //                 client.write(scanner.nextLine()); //write to server
+        //                 System.out.println(client.read()); //read from server
+        //                 //Get process
+        //                 this.port = readProcessPort();
+        //             }
+        //}
         //Exit client
-        exit();
+        //exit();
     }
-    
+
     //Menu for user to choose to send or download a file 
-    public void menu() throws Exception{    
-        while(true){
-            System.out.println("You have chosen to transfer a file.");
+    public void menu() throws Exception{
+        boolean exit = false;
+        System.out.println("Welcome to a File Sharing Application!");
+        System.out.println("Connecting to File Sharing Server...");
+        while(exit != true){
+            //System.out.println("You have chosen to transfer a file.");
             System.out.println("What would you like to do?");
             System.out.println("Choose a numerical option:");
+            System.out.println("0.----List Current Files in Server Directory");
             System.out.println("1.----- Send File");
             System.out.println("2.------ Download File");
-            System.out.println("3.------- Return to Main menu");
-            System.out.println("4.-------- Exit");
-            
-            String num = scanner.next();
+            //System.out.println("3.------- Return to Main menu");
+            System.out.println("3.-------- Exit");
+
+            String num = scanner.next().trim();
             int option = Integer.parseInt(num);
-            
+
             switch(option){
+                case 0:
+                client.write("LIST");
+                list();
+                break;
                 case 1:
                 client.write("SEND");
                 send();
@@ -87,105 +95,121 @@ public class ClientFile {
                 download();
                 break;
                 case 3:
-                (new ClientFile()).start();
-                case 0:
+                exit();
                 client.write("EXIT");
-                System.exit(1);
+                exit = true;
+                close();
+                break;
                 default:
                 System.out.println("Invalid input");
-            }}}
-    
+            }
+        }
+    }
+
     //Prints out a menu to the client, and reads the specified process to connect to.
-    public int readProcessPort(){
-        System.out.println();
-        System.out.println("Welcome to UNO-file transfer system.");
-        System.out.println("This system is for students to exchange notes.");
-        System.out.println("Please press '-list', for a current list of files.");
-        System.out.println("If you know the file you want to transfer");
-        System.out.println("type '-transfer'");
-        System.out.println("OR");
-        System.out.println("Simply enter 0 to Exit.");
-        System.out.flush();
-        String process;
-        process = scanner.next().trim();
-        /*
-         * Reads from the client input to determine which server/process to connect to. 
-         * The system is setup where each server/process has its own port.
-         */   
-        if (process.equals(LIST))
-            return LIST_PORT;
-        else if (process.equals(TRANSFER)){
-            return TRANSFER_PORT;
-        }else if (process.equals("1")){
-            return 1;
-        }else{
-            System.out.println("Invalid process entered. Retry!");
-            return -1;
-        }}
-    
+    //     public int readProcessPort(){
+    //         System.out.println();
+    //         System.out.println("Welcome to UNO-File Transfer System.");
+    //         System.out.println("This system is for students to exchange notes.");
+    //         System.out.println("Please press '-list', for a current list of files on the server.");
+    //         System.out.println("If you know the file you want to transfer");
+    //         System.out.println("type '-transfer'");
+    //         System.out.println("OR");
+    //         System.out.println("Simply enter 0 to Exit.");
+    //         System.out.flush();
+    //         String process;
+    //         process = scanner.next().trim();
+    //         /*
+    //          * Reads from the client input to determine which server/process to connect to. 
+    //          * The system is setup where each server/process has its own port.
+    //          */   
+    //         if (process.equals(LIST))
+    //             return LIST_PORT;
+    //         else if (process.equals(TRANSFER)){
+    //             return TRANSFER_PORT;
+    //         }else if (process.equals("0")){
+    //             return 0;
+    //         }else{
+    //             System.out.println("Invalid process entered. Retry!");
+    //             return -1;
+    //         }}
+
     /*
      * Send method for the user to send a file to the server.
      * If there is a file on the server with the same name, the
      * user is prompted to send a overwrite to the server or not.
      */
     public void send() throws Exception{
+        boolean sent = false;
+        boolean exists = true;
         String file;
         System.out.println("Enter the filename: ");
         file = scanner.next();
         File filename = new File(file);
         if(!(filename.exists())){
             System.out.println("File does not exists.");
+            return;
         }
+        
         client.write(file);
         String serverMsg = client.read();
+        
         if(serverMsg.compareTo("File already exists")==0){
             String option;
             System.out.println("File already exists, Overwrite file?\n");
             System.out.println("Type 'Y' or 'N'");
             option = scanner.next().trim();
             if(option.equals("Y") || option.equals("y")){
-                    client.write("Y");
+                client.write("Y");
+                sent = true;
             }else if(option.equals("N") || option.equals("n")){
-                    client.write("N");
-                    return;
+                client.write("N");
+                sent = false;
             }else{
-               System.out.println("Invalid input");
-               return;
+                System.out.println("Invalid input.");
+                return;
             }
-            System.out.println("Sending file");
-            long length = filename.length();
-            if(length> Integer.MAX_VALUE){
-              System.out.println("File is to large");
+
+            if(sent){
+                System.out.println("Sending file...");
+                long length = filename.length();
+                if(length> Integer.MAX_VALUE){
+                    System.out.println("File is to large");
+                }
+
+                byte[] bytes = new byte[(int)length];
+                FileInputStream filein = new FileInputStream(filename);
+                BufferedInputStream buffin = new BufferedInputStream(filein);
+                BufferedOutputStream buffout = new BufferedOutputStream(client.getOutputStream());
+                int count;
+                while((count =buffin.read(bytes))>0){
+                    buffout.write(bytes,0,count);
+                }
+                System.out.println("File sent successfully.");
+                System.out.println();
+                //readProcessPort();
             }
-            
-            byte[] bytes = new byte[(int)length];
-            FileInputStream filein = new FileInputStream(filename);
-            BufferedInputStream buffin = new BufferedInputStream(filein);
-            BufferedOutputStream buffout = new BufferedOutputStream(client.getOutputStream());
-            int count;
-            while((count =buffin.read(bytes))>0){
-              buffout.write(bytes,0,count);
-            }
-        readProcessPort();
         }
         else{
-        System.out.println("Sending file");
+            System.out.println("Sending file...");
             long length = filename.length();
             if(length> Integer.MAX_VALUE){
-              System.out.println("File is to large");
+                System.out.println("File is too large");
             }
             System.out.println(length);
             byte[] bytes = new byte[(int)length];
             FileInputStream filein = new FileInputStream(filename);
             BufferedInputStream buffin = new BufferedInputStream(filein);
             BufferedOutputStream buffout = new BufferedOutputStream(client.getOutputStream());
-            System.out.println(bytes);
-            System.out.println(buffout);
+            //System.out.println(bytes);
+            //System.out.println(buffout);
             int count;
             while((count =buffin.read(bytes))>0){
-              buffout.write(bytes,0,count);
+                buffout.write(bytes,0,count);
             }
-        readProcessPort();
+            System.out.println("File sent successfully.");
+            System.out.println();
+            //readProcessPort();
         }}
 
     /*
@@ -215,69 +239,95 @@ public class ClientFile {
                 String option;
                 option = scanner.next().trim();
                 System.out.println(option);
-               
+
                 if(option.equals("Y") || option.equals("y")){
-                   //FileOutputStream fileout = new FileOutputStream(file);
-                  System.out.println("hi");
-                   try{
-                     input = client.getInputStream();
-                     buffsize = client.getReceiveBufferSize();
-                     System.out.println("hi1");
-                   }catch(Exception e){
-                     System.out.println("Error with input stream");
-                   }
-                   try{
-                     buffOut = new BufferedOutputStream(new FileOutputStream(file));
-                     System.out.println("hi2");
-                   }catch(Exception e){
-                     System.out.println("Something wrong with the file");
-                   }
-                   System.out.println("hi3");////some error from here
-                   byte[] bytes = new byte[buffsize];
-                   int count;
-                  
-                   while((count =input.read(bytes))>0){
-                     buffOut.write(bytes,0,count);
-                  
-                   }
-                   System.out.println("hi4");////some error to here
-                   
+                    //FileOutputStream fileout = new FileOutputStream(file);
+                    System.out.println("hi");
+                    try{
+                        input = client.getInputStream();
+                        buffsize = client.getReceiveBufferSize();
+                        System.out.println("hi1");
+                    }catch(Exception e){
+                        System.out.println("Error with input stream");
+                    }
+                    try{
+                        buffOut = new BufferedOutputStream(new FileOutputStream(file));
+                        System.out.println("hi2");
+                    }catch(Exception e){
+                        System.out.println("Something wrong with the file");
+                    }
+                    System.out.println("hi3");////some error from here
+                    byte[] bytes = new byte[buffsize];
+                    int count;
+
+                    while((count =input.read(bytes))>0){
+                        buffOut.write(bytes,0,count);
+
+                    }
+                    System.out.println("hi4");////some error to here
+
                 }else if(option.equals("N") | option.equals("n")){
-                        readProcessPort();
-                        ;
+                    //readProcessPort();
+                    //doNothing go back to menu;
+                    return;
                 }else{
-                        System.out.println("Invalid input");
-                        readProcessPort();
+                    System.out.println("Invalid input");
+                    //readProcessPort();
+                    return;
                 }
                 if(option.equals("Y") | option.equals("y")){
-                        System.out.println("Send successful");
-                        readProcessPort();
+                    System.out.println("Send successful");
+                    //readProcessPort();
+                    return;
                 }else
-                        System.out.println("Send UNsuccessful");
+                    System.out.println("Send UNsuccessful");
+                return;
             }else{
-                   int i= 0;
-                   try{
-                     input = client.getInputStream();
-                     buffsize = client.getReceiveBufferSize();
-                   }catch(Exception e){
-                     System.out.println("Error with input stream");
-                   }
-                   try{
-                     BufferedOutputStream buffOut = new BufferedOutputStream(new FileOutputStream(file));
-                   }catch(Exception e){
-                     System.out.println("Something wrong with the file");
-                   }
-      
-                   byte[] bytes = new byte[buffsize];
-                   int count;
-                   while((count =input.read(bytes))>0){
-                     buffOut.write(bytes,0,count);
-                   }
-                   System.out.println("Send successful");
-                   readProcessPort();
-  
-            }}}
+                int i= 0;
+                try{
+                    input = client.getInputStream();
+                    buffsize = client.getReceiveBufferSize();
+                }catch(Exception e){
+                    System.out.println("Error with input stream");
+                }
+                try{
+                    BufferedOutputStream buffOut = new BufferedOutputStream(new FileOutputStream(file));
+                }catch(Exception e){
+                    System.out.println("Something wrong with the file");
+                }
 
-    //LIST METHOD
-    public void list(){}
+                byte[] bytes = new byte[buffsize];
+                int count;
+                while((count =input.read(bytes))>0){
+                    buffOut.write(bytes,0,count);
+                }
+                System.out.println("Send successful.");
+                //readProcessPort();
+
+            }
+        }
+    }
+
+    private void list() throws IOException{
+        String msg = client.read();
+        System.out.println(msg);
+        boolean finished = false;
+        String line = "";
+
+        while (finished == false && ((line = client.read()) != null)) {
+            if(line.equals("<End of directory>"))
+                finished = true;
+            System.out.println(line);
+        }
+        System.out.println();
+    }
+
+    private void close(){
+        try{
+            client.close();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+    }
 }

@@ -17,7 +17,7 @@ public class ServerFile extends Thread{
     BufferedOutputStream buffOut = null;
     int buffsize=0;
     ServerSocket serverSocket;
-    
+
     protected ServerFile(int port){
         this.port = port;
     }
@@ -35,7 +35,7 @@ public class ServerFile extends Thread{
                 System.out.println("File transfer server connected to " + clientSocket);
                 new Transferfile(clientSocket).start();
             }
-       }catch(Exception e){
+        }catch(Exception e){
             e.printStackTrace();
         }}
 
@@ -44,7 +44,7 @@ public class ServerFile extends Thread{
         Socket sock;
         BufferedReader in;
         PrintWriter out;
-        
+
         public Transferfile(Socket sock){
             this.sock = sock; 
         }
@@ -60,6 +60,16 @@ public class ServerFile extends Thread{
                     receive();
                 }else if(clientmsg.equals("DOWNLOAD")){
                     send();
+                }
+                else if(clientmsg.equals("LIST")){
+                    File dir = new File(""); //current working directory
+                    listDirectory(dir);
+                }
+
+                else if(clientmsg.equals("EXIT")){
+                    //doNothing (Keep server open)
+                    out.println("EXIT");
+                    out.flush();
                 }
 
             }catch(Exception ex){
@@ -81,16 +91,16 @@ public class ServerFile extends Thread{
                 out.flush();
                 long length = file.length();
                 if(length> Integer.MAX_VALUE){
-                  System.out.println("File is to large");
+                    System.out.println("File is to large");
                 }
                 byte[] bytes = new byte[(int)length];
                 FileInputStream filein = new FileInputStream(filename);
                 BufferedInputStream buffin = new BufferedInputStream(filein);
                 buffOut = new BufferedOutputStream(clientSocket.getOutputStream());
-                
+
                 int count;
                 while((count = buffin.read(bytes))>0){
-                  buffOut.write(bytes,0,count);
+                    buffOut.write(bytes,0,count);
                 }}}
 
         /*
@@ -104,6 +114,8 @@ public class ServerFile extends Thread{
                 return;
             }
             File file = new File(filename);
+            System.out.println(filename);
+            System.out.println(file.getName());
             String option;
             if(file.exists()){
                 out.println("File already exists");
@@ -118,21 +130,50 @@ public class ServerFile extends Thread{
                 int i= 0;
                 String temp;
                 try{
-                input = clientSocket.getInputStream();
-                buffsize = clientSocket.getReceiveBufferSize();
+                    input = clientSocket.getInputStream();
+                    buffsize = clientSocket.getReceiveBufferSize();
                 }catch(Exception e){
-                  System.out.println("Error with input stream");
+                    System.out.println("Error with input stream");
                 }
                 try{
-                buffOut = new BufferedOutputStream(new FileOutputStream(file));
+                    buffOut = new BufferedOutputStream(new FileOutputStream(file));
                 }catch(Exception e){
-                  System.out.println("Something wrong with the file");
+                    System.out.println("Something wrong with the file");
                 }
-      
+
                 byte[] bytes = new byte[buffsize];
-                int count;
-                while((count =input.read(bytes))>0){
-                buffOut.write(bytes,0,count);
+                int count = 0;
+                while((count = input.read(bytes))>0){
+                    buffOut.write(bytes,0,count);
                 }
                 out.println("File received");
-            }}}}
+            }
+        }
+
+        public void listDirectory(File dir) {
+            //String listOfFiles = "";
+            String absPath = dir.getAbsolutePath();
+            System.out.println(absPath);
+            out.println("Server Directory: " + absPath);
+            out.flush();   
+            String name = "";
+
+            File f = new File(absPath);
+            File[] listOfFiles = f.listFiles();
+            for (int j = 0; j < listOfFiles.length; j++) {
+                if (listOfFiles[j].isFile()) {
+                    name = listOfFiles[j].getName();
+                    out.println(name);
+                    out.flush();
+                    System.out.println(name);
+                }
+            }
+
+            out.println("<End of directory>");
+            out.flush();
+
+        }
+
+
+    }
+}
