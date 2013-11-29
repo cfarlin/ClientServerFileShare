@@ -1,0 +1,23 @@
+#BlueJ class context
+comment0.params=
+comment0.target=ClientFile()
+comment1.params=args
+comment1.target=void\ main(java.lang.String[])
+comment2.params=
+comment2.target=void\ exit()
+comment3.params=
+comment3.target=void\ start()
+comment3.text=\r\n\ Method\ to\ collect\ the\ port\ number\ and\ determine\ which\ process\ the\ clients\r\n\ wants\ to\ connect\ to.\r\n
+comment4.params=
+comment4.target=void\ menu()
+comment5.params=
+comment5.target=int\ readProcessPort()
+comment6.params=
+comment6.target=void\ send()
+comment6.text=\r\n\ Send\ method\ for\ the\ user\ to\ send\ a\ file\ to\ the\ server.\r\n\ If\ there\ is\ a\ file\ on\ the\ server\ with\ the\ same\ name,\ the\r\n\ user\ is\ prompted\ to\ send\ a\ overwrite\ to\ the\ server\ or\ not.\r\n
+comment7.params=
+comment7.target=void\ download()
+comment7.text=\r\n\ Download\ method\ that\ alows\ user\ to\ download\ a\ file\ from\ server.\r\n\ Method\ checks\ to\ if\ there\ is\ a\ file\ with\ the\ same\ file\ name\ that\ \r\n\ exits,\ if\ so\ an\ overwrite\ option\ is\ given\ to\ the\ user.\r\n
+comment8.params=
+comment8.target=void\ list()
+numComments=9

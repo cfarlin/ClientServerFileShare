@@ -3,7 +3,7 @@
  * CSCI 4311-01
  * Semester Project 
  */
-
+//Test update
 import java.net.*;
 import java.io.*;
 import java.util.*;
@@ -88,7 +88,7 @@ public class ClientFile {
                 break;
                 case 3:
                 (new ClientFile()).start();
-                case 4:
+                case 0:
                 client.write("EXIT");
                 System.exit(1);
                 default:
@@ -104,7 +104,7 @@ public class ClientFile {
         System.out.println("If you know the file you want to transfer");
         System.out.println("type '-transfer'");
         System.out.println("OR");
-        System.out.println("Simply enter 1 to Exit.");
+        System.out.println("Simply enter 0 to Exit.");
         System.out.flush();
         String process;
         process = scanner.next().trim();

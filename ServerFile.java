@@ -89,7 +89,7 @@ public class ServerFile extends Thread{
                 buffOut = new BufferedOutputStream(clientSocket.getOutputStream());
                 
                 int count;
-                while((count =buffin.read(bytes))>0){
+                while((count = buffin.read(bytes))>0){
                   buffOut.write(bytes,0,count);
                 }}}
 
